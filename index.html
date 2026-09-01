@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#6366f1">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/jpeg" href="https://avatars.githubusercontent.com/u/318936939?v=4">
+<link rel="apple-touch-icon" href="https://avatars.githubusercontent.com/u/318936939?v=4">
+<title>我的工作台</title>
+<style>
+:root{--bg:#f0f2f5;--card:#fff;--ink:#1a1a2e;--muted:#6b7280;--accent:#6366f1;--accent2:#8b5cf6;--rule:#e5e7eb;--radius:14px;--radius-sm:8px;--shadow:0 2px 12px rgba(0,0,0,.06);--gap:14px}
+[data-theme=dark]{--bg:#0f1117;--card:#1a1d29;--ink:#e4e6eb;--muted:#8b90a0;--accent:#818cf8;--accent2:#a78bfa;--rule:#2a2d3a;--shadow:0 2px 12px rgba(0,0,0,.3)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);transition:background .15s,color .15s;line-height:1.5;overflow-x:hidden}
+input,textarea,select,button{font-family:inherit;font-size:16px}
+.dock{position:fixed;left:0;top:0;bottom:0;width:64px;background:var(--card);border-right:1px solid var(--rule);z-index:100;display:flex;flex-direction:column;align-items:center;padding-top:10px;overflow-y:auto;box-shadow:2px 0 8px rgba(0,0,0,.04)}
+.dock-brand{font-size:18px;margin-bottom:8px;white-space:nowrap;writing-mode:vertical-lr;font-weight:700;color:var(--accent)}
+.dock-item{width:52px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;border-radius:10px;margin:2px 0;transition:background .15s}
+.dock-item:hover{background:var(--accent)15}
+.dock-item.active{background:var(--accent)20}
+.dock-item.active .dock-icon{transform:scale(1.1)}
+.dock-icon{font-size:20px;margin-bottom:2px;transition:transform .15s}
+.dock-text{font-size:10px;color:var(--muted);white-space:nowrap}
+.dock-item.active .dock-text{color:var(--accent);font-weight:600}
+.main{margin-left:64px;padding:12px;max-width:1200px}
+@media(max-width:600px){.main{padding:8px}.dock{width:56px}.dock-brand{font-size:15px}.dock-item{width:48px}.dock-icon{font-size:18px}.dock-text{font-size:9px}}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.clock-box{display:flex;gap:12px;align-items:center}
+.clock{background:var(--card);border-radius:var(--radius-sm);padding:6px 12px;box-shadow:var(--shadow);text-align:center}
+.clock-label{font-size:10px;color:var(--muted)}
+.clock-time{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+.header-actions{display:flex;gap:6px;align-items:center}
+.btn{padding:6px 12px;border:1px solid var(--rule);border-radius:var(--radius-sm);background:var(--card);cursor:pointer;color:var(--ink);transition:.15s;font-size:13px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:4px 8px;font-size:12px;border-radius:6px}
+.card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:var(--gap);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-t{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.section{scroll-margin-top:10px}
+.task-input{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.task-input input[type=text]{flex:1;min-width:150px;padding:8px 12px;border:1px solid var(--rule);border-radius:var(--radius-sm);background:var(--bg);color:var(--ink)}
+.task-input select{padding:8px;border:1px solid var(--rule);border-radius:var(--radius-sm);background:var(--bg);color:var(--ink)}
+.task-list{max-height:400px;overflow-y:auto}
+.task-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.task-item.done{opacity:.5}
+.task-item.done .task-text{text-decoration:line-through}
+.task-check{width:20px;height:20px;border:2px solid var(--rule);border-radius:50%;cursor:pointer;flex-shrink:0;transition:.15s}
+.task-check.done{background:var(--accent);border-color:var(--accent)}
+.task-check.done::after{content:'✓';color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.task-text{flex:1;font-size:14px}
+.task-del{cursor:pointer;color:var(--muted);font-size:16px;padding:4px}
+.filter-row{display:flex;gap:4px;margin-bottom:8px}
+.filter{padding:3px 10px;font-size:12px;border-radius:12px;cursor:pointer;border:1px solid var(--rule);background:var(--card)}
+.filter.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.gold-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.gold-item{background:var(--bg);border-radius:var(--radius-sm);padding:10px}
+.gold-name{font-size:12px;color:var(--muted);margin-bottom:4px}
+.gold-price{font-size:20px;font-weight:700;color:var(--accent)}
+.gold-change{font-size:13px}
+.gold-change.up{color:#4caf50}
+.gold-change.down{color:#e53935}
+.news-item{padding:8px 0;border-bottom:1px solid var(--rule)}
+.news-title{font-size:14px;font-weight:500}
+.news-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.news-cat{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;margin-right:4px;background:var(--accent)20;color:var(--accent)}
+.vocab-item{padding:8px 0;border-bottom:1px solid var(--rule)}
+.vocab-en{font-size:15px;font-weight:700;color:var(--accent)}
+.vocab-phonetic{font-size:12px;color:var(--muted)}
+.vocab-cn{font-size:13px;margin-top:2px}
+.vocab-sentence{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px}
+.treehole-input{width:100%;min-height:80px;padding:10px;border:1px solid var(--rule);border-radius:var(--radius-sm);background:var(--bg);color:var(--ink);resize:vertical}
+.treehole-item{padding:8px 0;border-bottom:1px solid var(--rule)}
+.treehole-text{font-size:14px;white-space:pre-wrap}
+.treehole-time{font-size:11px;color:var(--muted);margin-top:2px}
+.media-item{padding:8px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px}
+.media-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.media-platform{font-size:13px;font-weight:600}
+.media-title{font-size:14px;font-weight:500}
+.tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.tab{padding:4px 12px;font-size:12px;border-radius:12px;cursor:pointer;border:1px solid var(--rule);background:var(--card)}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.listen-item{padding:8px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.listen-item:hover{background:var(--accent)08}
+.listen-title{font-size:14px;font-weight:500}
+.listen-meta{font-size:11px;color:var(--muted);margin-top:2px}
+audio{width:100%;margin:8px 0;border-radius:var(--radius-sm)}
+.review-item{padding:8px 0;border-bottom:1px solid var(--rule)}
+.review-date{font-size:12px;color:var(--accent);font-weight:600}
+.review-text{font-size:14px;margin-top:2px}
+.empty{text-align:center;padding:20px;color:var(--muted);font-size:14px}
+.pwa-banner{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border-radius:var(--radius);padding:12px 20px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:200;display:none;gap:12px;align-items:center}
+.pwa-banner.show{display:flex}
+.sync-banner{position:fixed;top:16px;right:16px;background:var(--card);border-radius:var(--radius-sm);padding:8px 16px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:200;display:none;gap:8px;align-items:center}
+.sync-banner.show{display:flex}
+</style>
+</head>
+<body>
+<div class="dock" id="dock"><div class="dock-brand">工作台</div><div class="dock-item active" data-target="sec-plan"><span class="dock-icon">📋</span><span class="dock-text">计划</span></div><div class="dock-item" data-target="sec-work"><span class="dock-icon">💼</span><span class="dock-text">工作</span></div><div class="dock-item" data-target="sec-gold"><span class="dock-icon">🥇</span><span class="dock-text">金价</span></div><div class="dock-item" data-target="sec-news"><span class="dock-icon">📰</span><span class="dock-text">新闻</span></div><div class="dock-item" data-target="sec-vocab"><span class="dock-icon">📖</span><span class="dock-text">英语</span></div><div class="dock-item" data-target="sec-listen"><span class="dock-icon">🎧</span><span class="dock-text">听力</span></div><div class="dock-item" data-target="sec-media"><span class="dock-icon">📱</span><span class="dock-text">媒体</span></div><div class="dock-item" data-target="sec-review"><span class="dock-icon">📊</span><span class="dock-text">复盘</span></div><div class="dock-item" data-target="sec-treehole"><span class="dock-icon">🌳</span><span class="dock-text">树洞</span></div></div>
+<div class="main">
+<div class="header"><div class="clock-box"><div class="clock"><div class="clock-label">🇨🇳 北京</div><div class="clock-time" id="cnClock">00:00:00</div></div><div class="clock"><div class="clock-label">🇺🇸 纽约</div><div class="clock-time" id="usClock">00:00:00</div></div></div><div class="header-actions"><span id="dateText" style="font-size:12px;color:var(--muted)"></span><button class="btn" id="syncBtn">☁️同步</button><button class="btn" id="themeToggle"><span id="themeIcon">🌙</span></button></div></div>
+<div class="card section" id="sec-plan"><div class="card-h"><div class="card-t"><span class="dot"></span>📋 每日计划</div></div><div class="task-input"><input type="text" id="planInput" placeholder="添加今日计划..."><select id="planPriority"><option value="normal">普通</option><option value="high">重要</option><option value="urgent">紧急</option></select><button class="btn" onclick="addTask('plan')">添加</button></div><div class="filter-row"><span class="filter active" data-list="plan" data-filter="all" onclick="setFilter('plan','all')">全部</span><span class="filter" data-list="plan" data-filter="active" onclick="setFilter('plan','active')">进行中</span><span class="filter" data-list="plan" data-filter="completed" onclick="setFilter('plan','completed')">已完成</span><button class="btn-sm" onclick="clearDone('plan')" style="margin-left:auto">清除已完成</button></div><div class="task-list" id="planList"></div></div>
+<div class="card section" id="sec-work"><div class="card-h"><div class="card-t"><span class="dot"></span>💼 工作计划</div></div><div class="task-input"><input type="text" id="workInput" placeholder="添加工作计划..."><select id="workPriority"><option value="normal">普通</option><option value="high">重要</option><option value="urgent">紧急</option></select><button class="btn" onclick="addTask('work')">添加</button></div><div class="filter-row"><span class="filter active" data-list="work" data-filter="all" onclick="setFilter('work','all')">全部</span><span class="filter" data-list="work" data-filter="active" onclick="setFilter('work','active')">进行中</span><span class="filter" data-list="work" data-filter="completed" onclick="setFilter('work','completed')">已完成</span><button class="btn-sm" onclick="clearDone('work')" style="margin-left:auto">清除已完成</button></div><div class="task-list" id="workList"></div></div>
+<div class="card section" id="sec-gold"><div class="card-h"><div class="card-t"><span class="dot"></span>🥇 每日金价</div><div><span id="goldUpdateTime" style="font-size:11px;color:var(--muted)"></span><button class="btn-sm" onclick="fetchGold()">🔄刷新</button></div></div><div class="gold-grid" id="goldGrid"></div></div>
+<div class="card section" id="sec-news"><div class="card-h"><div class="card-t"><span class="dot"></span>📰 今日资讯</div><button class="btn-sm" onclick="fetchNews()">🔄刷新</button></div><div class="tabs"><span class="tab active" onclick="switchNewsTab('domestic')">🇨🇳 国内</span><span class="tab" onclick="switchNewsTab('international')">🌍 国际</span></div><div id="newsList"></div></div>
+<div class="card section" id="sec-vocab"><div class="card-h"><div class="card-t"><span class="dot"></span>📖 英语学习</div><button class="btn-sm" onclick="nextVocab()">下一篇</button></div><div id="vocabList"></div></div>
+<div class="card section" id="sec-listen"><div class="card-h"><div class="card-t"><span class="dot"></span>🎧 英语听力</div><button class="btn-sm" onclick="fetchListening(currentListenTab)">🔄刷新</button></div><div class="tabs"><span class="tab active" onclick="switchListenTab('bbc')">📻 BBC</span><span class="tab" onclick="switchListenTab('voa')">🇺🇸 VOA</span><span class="tab" onclick="switchListenTab('ted')">🎤 TED</span></div><audio id="audioPlayer" controls preload="none"></audio><div id="listenList"></div></div>
+<div class="card section" id="sec-media"><div class="card-h"><div class="card-t"><span class="dot"></span>📱 自媒体计划</div></div><div class="task-input"><input type="text" id="mediaTitle" placeholder="内容标题..." style="flex:1"><select id="mediaPlatform"><option>抖音</option><option>小红书</option><option>微信公众号</option><option>B站</option><option>视频号</option><option>YouTube</option></select><button class="btn" onclick="addMedia()">添加</button></div><div id="mediaList"></div></div>
+<div class="card section" id="sec-review"><div class="card-h"><div class="card-t"><span class="dot"></span>📊 内容复盘</div></div><div class="task-input"><input type="text" id="reviewInput" placeholder="今日复盘..." style="flex:1"><button class="btn" onclick="addReview()">添加</button></div><div id="reviewList"></div></div>
+<div class="card section" id="sec-treehole"><div class="card-h"><div class="card-t"><span class="dot"></span>🌳 树洞</div></div><textarea class="treehole-input" id="treeholeInput" placeholder="写下你的心情..."></textarea><div style="margin-top:8px"><button class="btn" onclick="addTreehole()">发布</button></div><div id="treeholeList" style="margin-top:12px"></div></div>
+</div>
+<div class="sync-banner" id="syncBanner"><span id="syncIcon">⏳</span><span id="syncText">同步中...</span></div>
+<div class="pwa-banner" id="pwaBanner"><span>📱 安装工作台APP</span><button class="btn-sm" onclick="installPWA()" style="background:var(--accent);color:#fff;border:none">安装</button><button class="btn-sm" onclick="document.getElementById('pwaBanner').classList.remove('show')">×</button></div>
+<script>
+(function(){'use strict';
+var Store={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+var pad=function(n){return String(n).padStart(2,'0')};
+function isUSDST(date){var y=date.getUTCFullYear();var mD=1,mC=0;while(mC<2){if(new Date(Date.UTC(y,2,mD)).getUTCDay()===0)mC++;if(mC<2)mD++}var dS=Date.UTC(y,2,mD,7);var nD=1,nC=0;while(nC<1){if(new Date(Date.UTC(y,10,nD)).getUTCDay()===0)nC++;if(nC<1)nD++}var dE=Date.UTC(y,10,nD,6);var ts=date.getTime();return ts>=dS&&ts<dE}
+function updateClock(){var now=new Date(),utc=now.getTime();var cn=new Date(utc+8*3600000);document.getElementById('cnClock').textContent=pad(cn.getUTCHours())+':'+pad(cn.getUTCMinutes())+':'+pad(cn.getUTCSeconds());var usO=isUSDST(now)?-4:-5;var us=new Date(utc+usO*3600000);document.getElementById('usClock').textContent=pad(us.getUTCHours())+':'+pad(us.getUTCMinutes())+':'+pad(us.getUTCSeconds());var days=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];document.getElementById('dateText').textContent=cn.getUTCFullYear()+'.'+(cn.getUTCMonth()+1)+'.'+cn.getUTCDate()+' '+days[cn.getUTCDay()]}
+updateClock();setInterval(updateClock,1000);
+var theme=Store.get('wb_theme','light');document.documentElement.setAttribute('data-theme',theme);document.getElementById('themeIcon').textContent=theme==='dark'?'☀️':'🌙';
+document.getElementById('themeToggle').addEventListener('click',function(){var c=document.documentElement.getAttribute('data-theme');var n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);Store.set('wb_theme',n);document.getElementById('themeIcon').textContent=n==='dark'?'☀️':'🌙'});
+var dockItems=document.querySelectorAll('.dock-item');dockItems.forEach(function(item){item.addEventListener('click',function(){var t=document.getElementById(item.dataset.target);if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});window.addEventListener('scroll',function(){var y=window.scrollY,current='';document.querySelectorAll('.section').forEach(function(s){if(s.offsetTop-80<=y)current=s.id});dockItems.forEach(function(item){item.classList.toggle('active',item.dataset.target===current)})});
+var taskLists={plan:Store.get('wb_tasks_plan',[]),work:Store.get('wb_tasks_work',[])};var taskFilters={plan:'all',work:'all'};
+window.addTask=function(list){var input=document.getElementById(list+'Input');var pri=document.getElementById(list+'Priority').value;var text=input.value.trim();if(!text)return;taskLists[list].unshift({id:Date.now(),text:text,done:false,priority:pri});Store.set('wb_tasks_'+list,taskLists[list]);input.value='';renderTasks(list)};
+window.setFilter=function(list,filter){taskFilters[list]=filter;document.querySelectorAll('.filter[data-list="'+list+'"]').forEach(function(b){b.classList.toggle('active',b.dataset.filter===filter)});renderTasks(list)};
+window.clearDone=function(list){taskLists[list]=taskLists[list].filter(function(t){return!t.done});Store.set('wb_tasks_'+list,taskLists[list]);renderTasks(list)};
+window.__toggle=function(list,id){taskLists[list].forEach(function(t){if(t.id===id)t.done=!t.done});Store.set('wb_tasks_'+list,taskLists[list]);renderTasks(list)};
+window.__del=function(list,id){taskLists[list]=taskLists[list].filter(function(t){return t.id!==id});Store.set('wb_tasks_'+list,taskLists[list]);renderTasks(list)};
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function renderTasks(list){var f=taskFilters[list];var items=taskLists[list].filter(function(t){if(f==='active')return!t.done;if(f==='completed')return t.done;return true});var el=document.getElementById(list+'List');if(items.length===0){el.innerHTML='<div class="empty">'+(f==='completed'?'还没有已完成的任务~':f==='active'?'没有进行中的任务~':'暂无任务，添加一个吧~ 📝')+'</div>';return}el.innerHTML=items.map(function(t){return '<div class="task-item'+(t.done?' done':'')+'"><div class="task-check'+(t.done?' done':'')+'" onclick="window.__toggle(\''+list+'\','+t.id+')"></div><span class="task-text">'+esc(t.text)+'</span><span class="task-del" onclick="window.__del(\''+list+'\','+t.id+')">×</span></div>'}).join('')}
+renderTasks('plan');renderTasks('work');['planInput','workInput'].forEach(function(id){document.getElementById(id).addEventListener('keypress',function(e){if(e.key==='Enter'){var list=id.replace('Input','');addTask(list)}})});
+var goldData={intl:{price:0,change:0,changePercent:0,unit:'美元/盎司',source:'',time:''},icbc:{buyPrice:0,sellPrice:0,unit:'元/克',source:'',time:''},boc:{price:0,unit:'元/克',source:'',time:''}};
+function renderGold(){var el=document.getElementById('goldGrid');var i=goldData.intl,c=goldData.icbc,b=goldData.boc;var up=i.change>=0;el.innerHTML='<div class="gold-item"><div class="gold-name">国际金价</div><div class="gold-price">$'+(i.price||0).toFixed(2)+'</div><div class="gold-change '+(up?'up':'down')+'">'+(up?'▲':'▼')+' '+Math.abs(i.change||0).toFixed(2)+' ('+(i.changePercent||0).toFixed(2)+'%)</div><div style="font-size:11px;color:var(--muted)">'+esc(i.source)+' '+esc(i.time)+'</div></div><div class="gold-item"><div class="gold-name">工行积存金</div><div class="gold-price">¥'+(c.buyPrice||0).toFixed(2)+'</div><div class="gold-change" style="color:var(--muted)">买入: ¥'+(c.buyPrice||0).toFixed(2)+' / 卖出: ¥'+(c.sellPrice||0).toFixed(2)+'</div></div><div class="gold-item"><div class="gold-name">中行积利金</div><div class="gold-price">¥'+(b.price||0).toFixed(2)+'</div><div class="gold-change" style="color:var(--muted)">'+esc(b.source)+'</div></div>'}
+renderGold();
+var CORS='https://api.allorigins.win/raw?url=';
+window.fetchGold=function(){var el=document.getElementById('goldUpdateTime');if(el)el.textContent='加载中...';fetch(CORS+encodeURIComponent('https://hq.sinajs.cn/list=hf_XAU')).then(function(r){return r.text()}).then(function(text){var m=text.match(/"([^"]+)"/);if(!m)return;var p=m[1].split(',');var price=parseFloat(p[0]);var prevClose=parseFloat(p[8])||parseFloat(p[7])||price;var change=price-prevClose;var pct=prevClose?(change/prevClose*100):0;goldData.intl={price:+price.toFixed(2),change:+change.toFixed(2),changePercent:+pct.toFixed(2),unit:'美元/盎司',source:'新浪财经',time:new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'})};var r=price/31.1035*7.2;goldData.icbc={buyPrice:Math.round((r+3)*100)/100,sellPrice:Math.round((r-1.5)*100)/100,unit:'元/克',source:'基于国际金价换算',time:goldData.intl.time};goldData.boc={price:Math.round((r+2)*100)/100,unit:'元/克',source:'基于国际金价换算',time:goldData.intl.time};renderGold();if(el)el.innerHTML='<span style="color:#4caf50">✓ 实时</span>'}).catch(function(){if(el)el.textContent='加载失败'})};
+fetchGold();setInterval(fetchGold,5*60*1000);
+var newsTab='domestic';var newsData={domestic:[],international:[]};
+window.switchNewsTab=function(tab){newsTab=tab;document.querySelectorAll('.tab').forEach(function(t,i){if(i<2)t.classList.toggle('active',i===(tab==='domestic'?0:1))});renderNews()};
+function renderNews(){var el=document.getElementById('newsList');var items=newsData[newsTab];if(!items||items.length===0){el.innerHTML='<div class="empty">暂无新闻数据~ 点击刷新获取最新资讯 📰</div>';return}el.innerHTML=items.map(function(n){return '<div class="news-item"><a href="'+esc(n.url||'#')+'" target="_blank" style="text-decoration:none;color:inherit"><div class="news-title">'+esc(n.title)+'</div><div class="news-meta"><span class="news-cat">'+esc(n.cat||'')+'</span>'+esc(n.source||'')+' '+esc(n.time||'')+'</div></a></div>'}).join('')}
+renderNews();
+window.fetchNews=function(){fetch(CORS+encodeURIComponent('https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc')).then(function(r){return r.json()}).then(function(j){if(j&&j.data){newsData.domestic=j.data.slice(0,15).map(function(item){return{cat:'热榜',title:item.Title,source:'头条热榜',time:'',url:item.Url||''}});renderNews()}}).catch(function(){})};
+fetchNews();setInterval(fetchNews,10*60*1000);
+var vocabIdx=Store.get('wb_vocab_idx',0);
+var VOCAB=[{en:'FOB',ph:'/fiː oʊ biː/',cn:'离岸价',s:'The price is FOB Shanghai.'},{en:'CIF',ph:'/siː aɪ ef/',cn:'到岸价',s:'We offer CIF New York price.'},{en:'MOQ',ph:'/em oʊ kjuː/',cn:'最低起订量',s:'Our MOQ is 500 pieces.'},{en:'Lead Time',ph:'/liːd taɪm/',cn:'交货周期',s:'Lead time is 30 days.'},{en:'LC',ph:'/el siː/',cn:'信用证',s:'We accept payment by LC at sight.'},{en:'OEM',ph:'/oʊ iː em/',cn:'代工生产',s:'We provide OEM services.'},{en:'Freight Forwarder',ph:'/freɪt ˈfɔːrwərdər/',cn:'货运代理',s:'Our freight forwarder handles shipping.'},{en:'Customs Clearance',ph:'/ˈkʌstəmz ˈklɪrəns/',cn:'清关',s:'Customs clearance takes 2-3 days.'},{en:'Proforma Invoice',ph:'/proʊˈfɔːrmə ˈɪnvɔɪs/',cn:'形式发票',s:'Please find the proforma invoice.'},{en:'Bill of Lading',ph:'/bɪl əv ˈleɪdɪŋ/',cn:'提单',s:'The B/L will be issued once loaded.'}];
+function renderVocab(){var el=document.getElementById('vocabList');var items=Vocab.slice(vocabIdx,vocabIdx+5);if(items.length<5)items=items.concat(VOCAB.slice(0,5-items.length));el.innerHTML=items.map(function(v){return '<div class="vocab-item"><span class="vocab-en">'+v.en+'</span> <span class="vocab-phonetic">'+v.ph+'</span><div class="vocab-cn">'+v.cn+'</div><div class="vocab-sentence">'+esc(v.s)+'</div></div>'}).join('')}
+window.nextVocab=function(){vocabIdx=(vocabIdx+5)%VOCAB.length;Store.set('wb_vocab_idx',vocabIdx);renderVocab()};
+renderVocab();
+var currentListenTab='bbc';var listenData={bbc:[],voa:[],ted:[]};
+window.switchListenTab=function(tab){currentListenTab=tab;document.querySelectorAll('.tab').forEach(function(t,i){if(i>=2&&i<=4)t.classList.toggle('active',i===(tab==='bbc'?2:tab==='voa'?3:4))});if(listenData[tab].length===0)fetchListening(tab);else renderListening()};
+window.fetchListening=function(src){src=src||currentListenTab;var feeds={bbc:['https://feeds.megaphone.fm/BBC6MinuteEnglish','https://podcasts.files.bbci.co.uk/p02pc9xn.rss'],voa:['https://learningenglish.voanews.com/rss/','https://www.voanews.com/rss/3521'],ted:['https://feeds.feedburner.com/TEDTalks_audio','https://feeds.megaphone.fm/TEDTalksDaily']};var urls=feeds[src]||feeds.bbc;function tryFeed(idx){if(idx>=urls.length){renderListening();return}fetch(CORS+encodeURIComponent(urls[idx])).then(function(r){return r.text()}).then(function(xml){if(!xml||xml.length<100){tryFeed(idx+1);return}var items=[];var re=/<item>([\s\S]*?)<\/item>/g;var match,count=0;while((match=re.exec(xml))&&count<10){var x=match[1];var title=(x.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[,''])[1].trim();var desc=(x.match(/<description[^>]*>([\s\S]*?)<\/description>/i)||[,''])[1].replace(/<[^>]+>/g,'').substring(0,200);var pubDate=(x.match(/<pubDate[^>]*>([^<]+)<\/pubDate>/i)||[,''])[1].substring(0,16);var audioUrl='';var encM=x.match(/<enclosure[^>]*url="([^"]+)"[^>]*type="audio[^"]*"/i);if(encM)audioUrl=encM[1];if(title&&audioUrl){items.push({title:title,summary:desc,audio:audioUrl,date:pubDate,source:src.toUpperCase()});count++}}if(items.length>0){listenData[src]=items;renderListening()}else tryFeed(idx+1)}).catch(function(){tryFeed(idx+1)})}tryFeed(0)};
+function renderListening(){var el=document.getElementById('listenList');var items=listenData[currentListenTab];if(!items||items.length===0){el.innerHTML='<div class="empty">暂无内容~ 点击刷新获取音频 🎧</div>';return}el.innerHTML=items.map(function(item){return '<div class="listen-item" onclick="playAudio(\''+item.audio.replace(/'/g,"\\'")+\')"><div class="listen-title">'+esc(item.title)+'</div><div class="listen-meta">'+esc(item.source)+' '+esc(item.date)+'</div></div>'}).join('')}
+window.playAudio=function(url){var p=document.getElementById('audioPlayer');p.src=url;p.play()};
+fetchListening('bbc');setInterval(function(){fetchListening(currentListenTab)},30*60*1000);
+var mediaPlans=Store.get('wb_media_plans',[]);
+window.addMedia=function(){var title=document.getElementById('mediaTitle').value.trim();if(!title)return;var platform=document.getElementById('mediaPlatform').value;mediaPlans.unshift({title:title,platform:platform,status:'待创作',date:new Date().toISOString().slice(0,10)});Store.set('wb_media_plans',mediaPlans);document.getElementById('mediaTitle').value='';renderMedia()};
+window.updateMediaStatus=function(idx,status){mediaPlans[idx].status=status;Store.set('wb_media_plans',mediaPlans);renderMedia()};
+window.deleteMedia=function(idx){mediaPlans.splice(idx,1);Store.set('wb_media_plans',mediaPlans);renderMedia()};
+function renderMedia(){var el=document.getElementById('mediaList');if(mediaPlans.length===0){el.innerHTML='<div class="empty">暂无内容计划~ 📱</div>';return}el.innerHTML=mediaPlans.map(function(p,idx){var icons={'抖音':'🎵','小红书':'📕','微信公众号':'💬','B站':'📺','视频号':'📹','YouTube':'▶️'};return '<div class="media-item"><div class="media-head"><span class="media-platform">'+(icons[p.platform]||'📱')+' '+esc(p.platform)+'</span><select onchange="updateMediaStatus('+idx+',this.value)" style="font-size:12px;padding:2px 6px"><option'+(p.status==='待创作'?' selected':'')+'>待创作</option><option'+(p.status==='创作中'?' selected':'')+'>创作中</option><option'+(p.status==='已发布'?' selected':'')+'>已发布</option><option'+(p.status==='已复盘'?' selected':'')+'>已复盘</option></select></div><div class="media-title">'+esc(p.title)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">📅 '+esc(p.date||'')+' <span onclick="deleteMedia('+idx+')" style="color:#e53935;cursor:pointer;float:right">🗑️</span></div></div>'}).join('')}
+renderMedia();
+var reviews=Store.get('wb_reviews',[]);
+window.addReview=function(){var input=document.getElementById('reviewInput');var text=input.value.trim();if(!text)return;reviews.unshift({text:text,date:new Date().toISOString().slice(0,10)});Store.set('wb_reviews',reviews);input.value='';renderReviews()};
+function renderReviews(){var el=document.getElementById('reviewList');if(reviews.length===0){el.innerHTML='<div class="empty">暂无复盘记录~ 📊</div>';return}el.innerHTML=reviews.map(function(r){return '<div class="review-item"><div class="review-date">📅 '+esc(r.date)+'</div><div class="review-text">'+esc(r.text)+'</div></div>'}).join('')}
+renderReviews();
+var treehole=Store.get('wb_treehole',[]);
+window.addTreehole=function(){var input=document.getElementById('treeholeInput');var text=input.value.trim();if(!text)return;treehole.unshift({text:text,time:new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'})});Store.set('wb_treehole',treehole);input.value='';renderTreehole()};
+function renderTreehole(){var el=document.getElementById('treeholeList');if(treehole.length===0){el.innerHTML='<div class="empty">暂无记录~ 🌳</div>';return}el.innerHTML=treehole.map(function(t){return '<div class="treehole-item"><div class="treehole-text">'+esc(t.text)+'</div><div class="treehole-time">'+esc(t.time)+'</div></div>'}).join('')}
+renderTreehole();
+document.getElementById('syncBtn').addEventListener('click',function(){showBanner('💾','数据已保存在本地浏览器')});
+function showBanner(icon,text){var b=document.getElementById('syncBanner');document.getElementById('syncIcon').textContent=icon;document.getElementById('syncText').textContent=text;b.classList.add('show');setTimeout(function(){b.classList.remove('show')},3000)}
+var backupKeys=['wb_tasks_plan','wb_tasks_work','wb_treehole','wb_reviews','wb_media_plans','wb_theme','wb_vocab_idx'];
+setInterval(function(){var data={};backupKeys.forEach(function(k){data[k]=Store.get(k,null)});var snapshots=Store.get('wb_snapshots',[]);snapshots.push({ts:new Date().toISOString(),data:data});if(snapshots.length>5)snapshots=snapshots.slice(-5);Store.set('wb_snapshots',snapshots)},5*60*1000);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(function(){})}
+var deferredPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;setTimeout(function(){document.getElementById('pwaBanner').classList.add('show')},3000)});
+window.installPWA=function(){document.getElementById('pwaBanner').classList.remove('show');if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null})}};
+})();
+</script>
+</body>
+</html>
