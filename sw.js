@@ -1,12 +1,8 @@
-const CACHE_NAME = 'workbench-v7';
+const CACHE_NAME = 'workbench-v8';
 var BASE = self.registration ? self.registration.scope : './';
 const APP_SHELL = [
-  BASE + 'workbench.html',
-  BASE + 'manifest.json',
-  BASE + 'assets/app.js',
-  BASE + 'assets/data.js',
-  BASE + 'assets/cloud-api.js',
-  'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js'
+  BASE + 'index.html',
+  BASE + 'manifest.json'
 ];
 
 self.addEventListener('install', function (e) {
